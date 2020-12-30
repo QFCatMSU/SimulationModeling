@@ -1,4 +1,5 @@
 #Bull trout model, based on Post et al. 2003. NAJFM 23:22-34
+# Waiting for response from John Post re model details
 
 # This is a version of the model that completes Assignment 2.5
 # Angler effort is fixed, not dynamic
