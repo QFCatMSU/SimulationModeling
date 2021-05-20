@@ -1,67 +1,78 @@
 # Use the cormorant model and add:
 
-# 1. stochastic winter severity (compound binomial and beta distributions) to 
-#    simulate natural mortality, replace the original death function with
-#    binomial probability of bad winter (p(bad) = .2), that selects the 
-#    average mortality rate and then use this as the mean for a beta distribution
-#    of the actual death rate
-# 2. gamma distributed stochastic variation in birth rates with a skew
+# 1. stochastic winter severity index using a gamma distribution 
+#    simulate death rate as linearly related to winter severity
+# 2. lognormally distributed stochastic variation in birth rate, same as earlier
 # 3. normal distribution of cull levels, same as assignment 3.2
 
-# Set an objective for controlled abundance level and determine target cull amount that meets the objective 90% of the time.
+# Set an objective for controlled abundance level and determine the largest 
+# target cull amount that meets the objective 90% of the time.
 
-# Determine the number of simulations needed to be 95% certain your harvest rate is sufficient to meet the objective
+# Use 20 year simulations
+# Record the final abundance
+# Set a target based on the lower 20th percentile of final abundance
+# Calculate the variance in this value among replicate simulations
+# Estimate a target number of simulations to get an estimate of the 20th percentile that is +/- 10%
 
 library(ggplot2)
+
+# Simulation controls
+nsims <- 100
+nyears <- 20
+simyears <- nsims * nyears
 
 # Define variables for processes
 # Birth rate
 a <- 1
 b <- .0046
-g_scale <- 1.5  # gamma scale
-# gamma shape defined by avg_br/scale
+br_sd <- .2
 
 # Death rate
-binom_p <- .2     # prob of high mortality
-avg_dr_high <- .6 # high mortality average
-avg_dr_low  <- .3 # low mortality average
-beta_a <- 2  # beta shape 1
-# beta shape 2 defined by beta_a/avg_dr - beta_a
+# Gamma with mean ~ 6, variance ~ 18, 90% between 1 and 14
+g_shape <- 2  # gamma shape
+g_scale <- 3  # gamma scale
+ws_slope <- .0154  # winter severity slope
+ws_int <- .25    # winter severity intercept
 
-hm <- 0  # average harvest or culling rate (1000s)
+# Harvest
+hm <- 1.8  # average harvest or culling rate (1000s)
 hsd <- .4 * hm # standard deviation of harvest: cv = .4
 
+# Assignment 3.4 - Part 3
+# Calculate variance of the objective proportion
+nsamp <- 30
+metric <- numeric(nsamp)
+for (ivar in 1:nsamp) {
+  
 # Set up a data frame for time series of numbers and rates for each replicate simulation
-birds_over_time <- numeric(10000) # 100 years x 100 replicates
-harvest <- numeric(10000)
-years <- numeric(10000)
-reps <- numeric(10000)
-outputs <- data.frame(reps,years,birds_over_time,harvest)
+birds_over_time <- numeric(simyears) # 100 years x 100 replicates
+harvest <- numeric(simyears)
+years <- numeric(simyears)
+reps <- numeric(simyears)
+br <- numeric(simyears)
+dr <- numeric(simyears)
+outputs <- data.frame(reps,years,birds_over_time,harvest,br,dr)
 df_counter <- 1 # initial row for data frame
 
+
 # Start a loop over replicate simulations
-for (sims in 1:100) {
+for (sims in 1:nsims) {
   
   # Re-establish starting values for each replicate simulation
   birds <- 20
   
   # Start the main simulation loop over time
-  for (i in 1:100) {   # we will run the model for 100 time steps
+  for (i in 1:nyears) {   # we will run the model for 100 time steps
     
     # Calculate the birth and death rates according to our dynamic processes
     # births per female is gamma dist around Ricker (density dependent) average
-    avg_br <- a * exp(-b * birds)
-    g_shape <- avg_br/g_scale
-    births_per_female <- rgamma(1,shape=g_shape,scale=g_scale)
-
-    # deaths per capita depend on high vs low Bernoulli draw and beta
-    if (rbinom(n=1,size=1,prob=binom_p)==1) {  # single Bernoulli trial, high mort if result is 1
-      beta_b <- beta_a/avg_dr_high - beta_a
-    } else {
-      beta_b <- beta_a/avg_dr_low - beta_a
-    }
-    deaths_per_capita <- rbeta(1,shape1=beta_a,shape2=beta_b)
-
+    br_dev <- rnorm(1,0,br_sd)  # .2 = sqrt(.04)
+    births_per_female <- a * exp(-b * birds + br_dev) # add lognormal error
+    
+    # deaths per capita depend winter severity
+    wint_sev <- rgamma(1,shape=g_shape,scale=g_scale)
+    deaths_per_capita <- ws_int + ws_slope * wint_sev
+    
     # Convert rates to actual numbers
     births <- births_per_female * birds / 2  # divide by 2 because per female
     deaths <- deaths_per_capita * birds
@@ -72,23 +83,57 @@ for (sims in 1:100) {
     if (birds < 0) birds <- 0
     
     # Add a row to the output data frame
-    outputs[df_counter,] <- c(sims,i,birds,harvest)
+    outputs[df_counter,] <- c(sims,i,birds,harvest,births_per_female,
+                              deaths_per_capita)
     df_counter <- df_counter + 1
     #close the time loop
   }
   #close the replicate simulation loop
 }
 
-# Assignment 3.1.2 - frequency for #s < 10,000
-too_low <- subset(outputs, outputs$birds_over_time<10)
-prop_low <- length(too_low$birds_over_time)/length(outputs$birds_over_time)
+# Management objective: 20th quantile is greater than xx
+lastyear <- subset(outputs,outputs$years==nyears)
+metric[ivar] <- quantile(lastyear$birds_over_time,probs=c(.2))
+
+# Next sample
+}
+# Get var and CV
+v_metric <- var(metric)
+m_metric <- mean(metric)
+cv_metric <- sqrt(v_metric)/m_metric
+# Confidence interval
+upper_ci <- m_metric+1.96*sqrt(v_metric/nsamp)
+lower_ci <- m_metric-1.96*sqrt(v_metric/nsamp)
+(upper_ci - m_metric)/m_metric
+# sample requirement: # of samples of nsims x nyears simulations
+n_req <- ((1.96/.05)*cv_metric)^2
+
+
+
+
+breaks <- seq(0,150,5)  # define bins for histogram using "breaks"
+Dist_plot <- ggplot() +
+  geom_histogram(mapping = aes(x=lastyear$birds_over_time),
+                 breaks=breaks) +
+  labs(title="Distribution of forecasted bird abundance",
+       x="Numbers",
+       y="Count") +
+  theme_bw()
+plot(Dist_plot)
+
+# For 100 simulation replicates
+# A cull amount of 1.8 (1,800 birds) gives a "prop_low" value that is less than .1
+# at least, most of the time
 
 # calculate the mean across simulations
 avg_birds <- as.numeric(by(outputs$birds, outputs$years, FUN=mean))
 avg_harvest <- as.numeric(by(outputs$harvest, outputs$years, FUN=mean))
+avg_br <- as.numeric(by(outputs$br, outputs$years, FUN=mean))
+avg_dr <- as.numeric(by(outputs$dr, outputs$years, FUN=mean))
+
 
 # Plot the results - ggplot version
-x <- seq(from=1,to=100)
+x <- seq(from=1,to=nyears)
 Number_plot <- ggplot() +
   geom_line(mapping=aes(x=outputs$years,y=outputs$birds_over_time, group=outputs$reps),
             color = 'lightgrey') +
@@ -99,16 +144,25 @@ Number_plot <- ggplot() +
   labs(title = "Abundance",
        x = "Year",
        y = "Cormorant numbers") +
-  coord_cartesian(ylim=c(0,50)) +
+  coord_cartesian(ylim=c(0,100)) +
   theme_classic()
 plot(Number_plot)
-lastyear <- subset(outputs,outputs$years==100)
-breaks <- seq(0,40,5)  # define bins for histogram using "breaks"
-Dist_plot <- ggplot() +
-  geom_histogram(mapping = aes(x=lastyear$birds_over_time),
-                 breaks=breaks) +
-  labs(title="Distribution of forecasted bird abundance",
-       x="Numbers",
-       y="Count") +
+
+Rate_plot <- ggplot() +
+  geom_line(mapping=aes(x=x,y=avg_br),
+            color='blue') +
+  geom_line(mapping=aes(x=x,y=avg_dr),
+            color="red") +
+  labs(title = "Birth and death rates",
+       x="Year",
+       y="Per capita rate") +
+  coord_cartesian(ylim=c(0,1)) +
   theme_bw()
-plot(Dist_plot)                 
+plot(Rate_plot)
+
+Birth_var <- ggplot() +
+  geom_histogram(mapping=aes(x=outputs$br)) +
+  theme_bw()
+Birth_var
+
+
