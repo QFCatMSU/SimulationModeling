@@ -3,13 +3,6 @@
 library(ggplot2)
 library(mvtnorm)  # we need the mvtnorm package to generate multivariate normal random numbers
 
-# This function calculates the standard error of the residuals from a lm object
-s_e_resid <- function(lin_model) {   
-  sumsq_res <- sum(lin_model$residuals^2)
-  df <- lin_model$df.residual
-  return <- sqrt(sumsq_res/df)
-}
-
 # Get the data:
 br_data <- read.csv(file="../Data/BirthData.csv", header=T)
 
@@ -18,11 +11,10 @@ br_data$lnbr <- log(br_data$Obs_br)
 linearfit <- lm(lnbr~Numbers, data=br_data)
 summary(linearfit)
 
-
 # Stochastic population model that uses birth process parameter estimates
 # Define variables for processes
-a <- exp(linearfit$coef[1])+s_e_resid(linearfit)^2/2  # includes bias correction
-b <- linearfit$coef[2]
+a <- exp(coef(linearfit)[1])+sigma(linearfit)^2/2  # includes bias correction
+b <- coef(linearfit)[2]
 c <- 1
 d <- 50
 hm <- 3  #harvest or culling rate (1000s)
@@ -50,7 +42,7 @@ for (sims in 1:100) {
     
     # Calculate the birth and death rates according to our dynamic processes
     # Option 1: all uncertainty is process variation
-    br_dev <- rnorm(1,0,s_e_resid(linearfit))  # residual sd from model fit
+    br_dev <- rnorm(1,0,sigma(linearfit))  # residual sd from model fit
     births_per_female <- a * exp(b * birds + br_dev) # add lognormal error
     deaths_per_capita <- c * birds / (d + birds)
     
@@ -75,8 +67,8 @@ for (sims in 1:100) {
     for (sims in 1:100) {
     
     # select birth rate parameters
-    br_par <- rmvnorm(1,mean=linearfit$coefficients, sigma=vcov(linearfit))
-    a <- exp(br_par[1])+s_e_resid(linearfit)^2/2
+    br_par <- rmvnorm(1,mean=coef(linearfit), sigma=vcov(linearfit))
+    a <- exp(br_par[1])+sigma(linearfit)^2/2
     b <- br_par[2]
     # Re-establish starting values for each replicate simulation
     birds <- 20
@@ -86,7 +78,7 @@ for (sims in 1:100) {
       
       # Calculate the birth and death rates according to our dynamic processes
       # Option 1: all uncertainty is process variation
-      br_dev <- rnorm(1,0,s_e_resid(linearfit))  # residual sd from model fit
+      br_dev <- rnorm(1,0,sigma(linearfit))  # residual sd from model fit
       births_per_female <- a * exp(b * birds + br_dev) # add lognormal error
       deaths_per_capita <- c * birds / (d + birds)
       
