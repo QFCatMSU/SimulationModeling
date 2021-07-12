@@ -1,6 +1,7 @@
 # Assignment 2.3c Using Third model - meta-population with age structure
 # Three sub-populations, different dynamics, density dependent movement
-# See lines 69-81
+
+# See lines 69-81 for solution code
 
 # Step 1: Create an array of initial numbers at age, by sub-population
 # Note that R normally has "1" as the first index of a vector, so 

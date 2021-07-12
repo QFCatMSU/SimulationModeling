@@ -22,7 +22,7 @@
 ##################################
 
 # Units matter more now, so we need to specify the size of the area where predation is 
-# ocurring to convert bird numbers to bird density, and the length of the feeding period
+# occurring to convert bird numbers to bird density, and the length of the feeding period
 # Specify feeding area
 area <- 25  # ha
 # Add feeding season length in days to get total seasonal consumption

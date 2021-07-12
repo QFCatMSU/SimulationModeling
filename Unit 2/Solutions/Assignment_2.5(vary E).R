@@ -31,7 +31,7 @@ vf <- c(.3,1200)     # checked
 q <- 0.07
 hm <- 0.1
 ncm <-0.1
-E <- c(0,1,2,3,4,5,6)   #initial effort at zero, later make this a vector
+E <- 0 # c(0,1,2,3,4,5,6)   #initial effort at zero, later make this a vector for Assignment 2.5
   
 #Step 4: Calculate lengths and weights
 bt_len <- vB[1] * (1-exp(-vB[2]*(ages-vB[3])))  #VonB growth

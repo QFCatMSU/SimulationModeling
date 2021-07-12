@@ -6,7 +6,7 @@
 
 #################################
 #Answers to questions:
-# Prey collapse for Type 2 and 15, but find lower eql for Type 3 and 15
+# Prey collapse for Type 2 and 15, but find lower eqm for Type 3 and 15
 # Prey reach similar levels for Type 2 and 3 and 50
 # Look at mortality versus density for two fr types
 ##################################
