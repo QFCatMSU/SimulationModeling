@@ -60,7 +60,7 @@ lines(death_rate~x, col='red')
 library(ggplot2)
 x <- seq(from=1,to=100)
 Number_plot <- ggplot() +
-  geom_line(mapping=aes(x=x,y=birds_over_time)) +
+  geom_line(mapping=aes(x=x,y=all_ages_over_time)) +
   labs(title = "Abundance",
        x = "Year",
        y = "Cormorant numbers") +
@@ -75,7 +75,7 @@ Rate_plot <- ggplot() +
   labs(title = "Birth and death rates",
        x="Year",
        y="Per capita rate") +
-  coord_cartesian(ylim=c(0,1)) +
+  coord_cartesian(ylim=c(0,3)) +
   theme_bw()
 plot(Rate_plot)
 

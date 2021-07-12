@@ -6,11 +6,12 @@
 birds <- 20
 
 # Define variables for processes
-# 1-1b use r and K instead of a-d
+# Assignment 2.1b use r and K instead of a-d
+# Solution: r = .38 and K = 36.6 give pretty similar dynamics to first model
 r <- 0.38
 K <- 36.6
-# hr <- .31
-# 1-1b - r = .4 and K = 36.6 give pretty similar dynamics.
+# Assignment 2.1b - remove harvest rate: hr <- .31
+
 
 # Set up vectors for time series of numbers and rates
 birds_over_time <- numeric(100)
@@ -21,12 +22,11 @@ growth_rate <- numeric(100)
 # Start the main simulation loop over time
 for (i in 1:100) {   # we will run the model for 100 time steps
   
-  # 1-1b calculate the population growth rate according to our (logistic) dynamic process
+  # Assignment 2.1b calculate the population growth rate according to our (logistic) dynamic process
   gr <- r * birds * ( 1 - birds/K)
-#  harvest <- hr * birds
 
-  # 1-1b Apply the tautology
-  birds <- birds + gr # - harvest
+  # Assignment 2.1b Apply the new tautology
+  birds <- birds + gr 
   
   # Update the vectors of numbers and rates
   birds_over_time[i] <- birds

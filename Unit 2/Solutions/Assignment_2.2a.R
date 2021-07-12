@@ -6,7 +6,10 @@
 birds <- c(15,10,5,3,10)
 
 # Define variables for processes (same as First_Model!)
-a <- 1  # adjust this parameter to compensate for lower mature birds...
+#Assignment 2.2a - Solution: Only older birds are reproducing, so:
+#   a) # offspring per female * # females is a smaller number
+#   b) only density of mature birds affects birth rates so compensation is less at the same pop size
+a <- 1  # Assignment 2.2a: you can adjust this parameter to compensate for fewer mature birds...
 b <- .0046
 c <- 1
 d <- 50
@@ -79,34 +82,5 @@ Rate_plot <- ggplot() +
   theme_bw()
 plot(Rate_plot)
 
-#This code shows how I created a data frame with year, age, and numbers as columns
-# which enables me to display the results as a stacked-bar plot of the numbers-at-age
-# over time. There is almost certainly a more elegant way to do this, including by
-# storing the age-based numbers in the appropriate format during the simulation
-# However, this works...
 
-#Create five data frames, one for each age group, with columns for year, age and numbers
-tmp_1 <- data.frame(seq(1:100),rep(1,100), birds_over_time[1,], row.names = NULL)
-dimnames(tmp_1)[[2]] <- c('Year','Age','Numbers')
-tmp_2 <- data.frame(seq(1:100),rep(2,100), birds_over_time[2,], row.names = NULL)
-dimnames(tmp_2)[[2]] <- c('Year','Age','Numbers')
-tmp_3 <- data.frame(seq(1:100),rep(3,100), birds_over_time[3,], row.names = NULL)
-dimnames(tmp_3)[[2]] <- c('Year','Age','Numbers')
-tmp_4 <- data.frame(seq(1:100),rep(4,100), birds_over_time[4,], row.names = NULL)
-dimnames(tmp_4)[[2]] <- c('Year','Age','Numbers')
-tmp_5 <- data.frame(seq(1:100),rep(5,100), birds_over_time[5,], row.names = NULL)
-dimnames(tmp_5)[[2]] <- c('Year','Age','Numbers')
-
-#Combine all five data frames into one
-AgeComp_data <- rbind(tmp_1, tmp_2, tmp_3, tmp_4, tmp_5)
-
-#Use geom_bar to create the graph
-AgeComp_Plot <- ggplot(data=AgeComp_data) +
-  geom_bar(mapping = aes(fill=Age,x=Year,y=Numbers),
-           position = 'stack', stat = 'identity') +
-  labs(title="Age Composition",
-       x="Year",
-       y="Numbers") +
-  theme_bw()
-plot(AgeComp_Plot)
   

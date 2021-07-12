@@ -10,8 +10,9 @@ a <- 1
 b <- .0046
 c <- 1
 d <- 50
-#1-1a - add a harvest rate parameter
-hr <- .31   #max hr that keeps birds above 10K is ~ .31
+
+#Assignment 2.1a - add a harvest rate parameter here  
+hr <- .31   #Solution: max hr that keeps birds above 10K is ~ .31
 
 
 # Set up vectors for time series of numbers and rates
@@ -29,14 +30,14 @@ for (i in 1:100) {   # we will run the model for 100 time steps
   # Convert rates to actual numbers
   births <- births_per_female * birds / 2  # divide by 2 because per female
   deaths <- deaths_per_capita * birds
-  #1-1a - caclulate harvest losses
+
+  #Assignment 2.1a - calculate harvest losses
   harvest <- hr * birds
   
-  # Apply the tautology
-  # 1-1a - include harvest losses
+  #Assignment 2.1a - modeify the tautology to include harvest losses
   birds <- birds + births - deaths - harvest
   
-  # 1-1a - protect against negative numbers of birds
+  #Assignment 2.1a - protect against negative numbers of birds
   if (birds < 0) birds <- 0
   
   # Update the vectors of numbers and rates
