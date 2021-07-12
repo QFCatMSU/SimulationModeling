@@ -30,7 +30,7 @@ lake_area <- 525   # ha of lake
 q_corr <- q * triplength / lake_area  # q in units of 1/trips (i.e., adjust for trip length and area)
 trips <- 250 #replace E (effort) with trips
 release_fish <- numeric(trips)
-bag_limit <- 1
+bag_limit <- 2
 
 # Non compliance - here we assume the distribution is uniform
 p_keep_low <- .2   # lower and upper bounds on probability of keeping fish 
