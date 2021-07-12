@@ -63,7 +63,7 @@ lines(death_rate~x, col='red')
 library(ggplot2)
 x <- seq(from=1,to=100)
 Number_plot <- ggplot() +
-  geom_line(mapping=aes(x=x,y=birds_over_time)) +
+  geom_line(mapping=aes(x=x,y=all_ages_over_time)) +
   labs(title = "Abundance",
        x = "Year",
        y = "Cormorant numbers") +
