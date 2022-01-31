@@ -27,6 +27,7 @@ xi[15:16] <- c(.002,.00000125) #sr_pars
 xi_grid <- array(0,dim=c(16,5))
 xi_levels <- c(.9,.95,1,1.05,1.1)
 xi_grid <- outer(xi,xi_levels)
+xi_ref <- numeric(16)
 
 # loop over replicate "tranjectories"
 ee <- array(0,dim=c(40,16))
@@ -61,9 +62,9 @@ for (ipar in 1:16) {
   #  the elementary effect for that parameter
   out_2 <- bt_model(xi_ref)
   ee[irep,jpar] <- (out_2 - out_1)/0.05  # delta is 5%
-# Finish the loop over paramters
+# Finish the loop over parameters
 }
-# Repeat r times
+# Repeat 40 times
 }
 # Create a data frame for the summary statistics
 ee_summ <- setNames(data.frame(matrix(ncol=4,nrow=16)),
@@ -80,6 +81,8 @@ ee_plot <- ggplot(data=ee_summ, aes(x=EE_mean_star,y=EE_variance)) +
   geom_text(aes(label=Parameter),size=4, vjust=1, hjust=0) +
   theme_bw()
 ee_plot
+
+
 # Model function:
 bt_model <- function(xi) {
   # Modifications needed for discrete catch per trip distribution
@@ -131,7 +134,8 @@ bt_model <- function(xi) {
   
     #Apply tautology
     for (j in 15:2) {
-      btrout[j,i+1] <- btrout[j-1,i] - deaths[j-1] 
+      btrout[j,i+1] <- btrout[j-1,i] - deaths[j-1]
+      if (btrout[j,i+1]<0) btrout[j,i+1] = 0
       btrout[1,i+1] <- age0 * (1 - xi[3])  #first year losses, no fishing
     } 
     adults[i+1] <- sum(btrout[6:15,i+1])

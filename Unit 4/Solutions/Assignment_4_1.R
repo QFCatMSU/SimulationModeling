@@ -1,5 +1,5 @@
-#Unit 4: Assignment 4.1 Using evidence to inform
-#        the bull trout model
+#Unit 4: Assignment 4.1 - Using evidence to inform
+#        the bull trout model and evaluate bag limits
 
 # This code is based on Poisson_NB_Catch.R
 
@@ -14,10 +14,10 @@ bt_len <- numeric(15)
 bt_wt <- numeric(15)
 mat_age <- 6
 fec <- c(-61.288,1.478) 
-# vB <- c(80,.32,2.29)  # we estimate this instead of assuming the value
+# vB <- c(80,.32,2.29)  # we now estimate this instead of assuming the value
 lw <- c(.01,3)       
 natmort <- .2 
-# sr <-  c(.002,.00000125) #these will also be estimated
+# sr <-  c(.002,.00000125) # these will also be estimated
 
 # Define fishery parameters
 vf <- c(.3,1200)     
@@ -30,44 +30,65 @@ lake_area <- 525   # ha of lake
 q_corr <- q * triplength / lake_area  # q in units of 1/trips (i.e., adjust for trip length and area)
 trips <- 250 #replace E (effort) with trips
 release_fish <- numeric(trips)
-bag_limit <- 2
+bag_limit <- 3
 
-# Non compliance - here we assume the distribution is uniform
+# ********************Assignment 4.1***********************************************
+
+#  Elicited values for non compliance probability
+# We will assume the distribution of non-compliance uncertainty is uniform
 p_keep_low <- .2   # lower and upper bounds on probability of keeping fish 
-p_keep_high <- .5  #   above the bag limit
+p_keep_high <- .5  # above the bag limit
 
-# Read in the s-r and growth data
+# Read in the stock-recruitment and growth data
 sr_data <- read.csv(file='../Data/S-R_data.csv', header=T)
 gr_data <- read.csv(file='../Data/growth_data.csv', header=T)
 
-# Estimate parameters from the data
-# Stock-recruitment
-sr_data$y <- log(sr_data$stoch_age0/sr_data$eggs)
-sr_model <- nls(y~log(a/(1+b*eggs)),start=list(a=.005,b=.00003),
-                data=sr_data)
-# Growth
-gr_model <- nls(stoch_len~a*(1-exp(-b*(pick_age-c))),
+# Next we estimate parameters from the data
+# 
+# First, recruitment
+# We're fitting the S-R data to the Ricker model:
+#  Step 1: Create the y value for the linearized model (ln(R/S))
+sr_data$y <- log(sr_data$Age0/sr_data$Eggs)
+#  Step 2: Fit the model using lm  
+sr_model <- lm(y~Eggs, data=sr_data)
+
+# Second, growth
+# We're fitting the growth data to the von-Bertalanffy function:
+#  Step 1: Convert lengths from mm to cm, to be consistent with earlier versions of the model
+gr_data$Length <- gr_data$Length_mm/10
+#  Step 2: Fit the model using nls and the starting values provided in the assignment
+gr_model <- nls(Length~a*(1-exp(-b*(Age-c))),
                 start=list(a=65,b=.5,c=2), data=gr_data)
 
-# Set up a replicate simulation loop, and bins for model outputs
-nsims <- 100
-nyears <- 100
-final_abundance <- numeric(100)
-for (isim in 1:nsims) {
+# ********************Assignment 4.1***********************************************
 
-  # Calculate lengths and weights (don't vary over time)
-  # First select a set of von-B parameters
+# Set up a replicate simulation loop, and bins for model outputs
+nsims <- 500  # 100 simulations
+nyears <- 100  # 100 years per simulation
+final_abundance <- numeric(500) #save the final year abundance of adults
+for (isim in 1:nsims) {
+  
+  # ********************Assignment 4.1***********************************************
+    #  First select a set of von-B parameters from gr_model
+    #  Using a multivariate normal distribution
+    #  coef gives parameter point estimates, vcov is covariance matrix
   vB <- rmvnorm(1,mean=coef(gr_model),
                       sigma=vcov(gr_model))
-  # Get lengths, then weights for this simulation
-  bt_len <- vB[1] * (1-exp(-vB[2]*(ages-vB[3])))  #VonB growth equation
-  bt_len[1] <- 7.3   #fix linear growth for age 1 and 2 
+  
+  # Choose a probability of non-compliance for this simulation,
+  #  based on a uniform distribution with elicited bounds
+  p_keep <- runif(1,min=p_keep_low,max=p_keep_high)
+  
+  # ********************Assignment 4.1***********************************************
+  
+  # Use selected parameters to get lengths, then weights for this simulation
+  bt_len <- vB[1] * (1-exp(-vB[2]*(ages-vB[3])))  #VonB growth equation, using parameters from rmvnorm
+  bt_len[1] <- 7.3   #fix lengths at age for age 1 and 2 
   bt_len[2] <- 11.8
   bt_wt <- lw[1]*bt_len^lw[2]
   
   # and calculate age-specific vulnerability
   v <- (1 - exp(-vf[1]*bt_len))^vf[2]
-
 
   # Initialize numbers
   age0 <- 2000
@@ -77,9 +98,6 @@ for (isim in 1:nsims) {
   }
   adults[1] <- sum(btrout[6:15,1])
   
-  # Choose a probability of non-compliance for this simulation
-  p_keep <- runif(1,min=p_keep_low,max=p_keep_high)
-
   # Start a loop over time
   for (i in 1:(nyears-1))  {
     # Calculate average catch per trip
@@ -107,25 +125,31 @@ for (isim in 1:nsims) {
     
     # Apply tautology
     for (j in 15:2) {
-      btrout[j,i+1] <- btrout[j-1,i] - deaths[j-1] 
+      btrout[j,i+1] <- btrout[j-1,i] - deaths[j-1]
+      if (btrout[j,i+1]<0) btrout[j,i+1] = 0
       btrout[1,i+1] <- age0 * (1 - natmort)  #first year losses, no fishing
     } 
     adults[i+1] <- sum(btrout[6:15,i+1])
     # Calculate population egg production
     eggs <- sum(btrout[mat_age:15,i]*(fec[1]+fec[2]*bt_wt[mat_age:15])*0.5)
     
-    # Calculate recruitment using Bev-Holt model
-    lnRS <- log(coef(sr_model)[1]/(1+coef(sr_model)[2]*eggs))
+    # ********************Assignment 4.1*********************************************** 
+    # Calculate recruitment using estimated Ricker model parameters
+    lnRS <- coef(sr_model)[1]+coef(sr_model)[2]*eggs
     # add normal deviate
     lnRS <- lnRS + rnorm(1,0,sigma(sr_model))
-    RS <- exp(lnRS)*exp(sigma(sr_model)^2/2)
-    age0 <- unname(RS * eggs)
-  
-  # End time loop
+    age0 <- exp(lnRS)*eggs
+    # ********************Assignment 4.1***********************************************
+
+      # End time loop
   }
+  # Save the final abundance of adults for each simulation
   final_abundance[isim] <- adults[i+1]
   # End replicate simulation loop
 }
+
+target_abundance <- 1000  # Assignment 4.1 - set target
+sum(final_abundance<target_abundance)  # Count number of sims with N < target
 
 # Plot the distribution of final abundance values
 breaks <- seq(0,4000,250)  # define bins for histogram using "breaks"
@@ -137,3 +161,8 @@ PlotNumbers <- ggplot() +
        y="Count") +
   theme_bw()
 PlotNumbers
+
+#Results, bad outcomes out of 500 simulations:
+# Bag limit = 2; Count = 100-110
+# Bag limit = 3; Count = 135-145
+# Bag limit = 1; Count = 45-60

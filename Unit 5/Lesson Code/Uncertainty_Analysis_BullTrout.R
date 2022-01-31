@@ -58,6 +58,7 @@ nsims <- 1000
 outputs <- setNames(data.frame(matrix(ncol=8,nrow=nsims)),
                      c('adults','vB_1','vB_2','vB_3','fec_1','fec_2',
                        'sr_1','sr_2'))
+
 # Loop over simulations
 for (isims in 1:nsims) {
   # Get the parameter values for this simulation
@@ -109,7 +110,8 @@ for (isims in 1:nsims) {
     
     #Apply tautology
     for (j in 15:2) {
-      btrout[j,i+1] <- btrout[j-1,i] - deaths[j-1] 
+      btrout[j,i+1] <- btrout[j-1,i] - deaths[j-1]
+      if(btrout[j,i+1]<0) btrout[j,i+1] = 0
       btrout[1,i+1] <- age0 * (1 - natmort)  #first year losses, no fishing
     } 
     adults[i+1] <- sum(btrout[6:15,i+1])

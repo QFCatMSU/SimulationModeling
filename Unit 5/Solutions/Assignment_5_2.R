@@ -5,6 +5,10 @@
 #  "Uncertainty_Analysis_BullTrout.R" and then repeating the
 #  uncertainty analysis used there
 
+# Assuming I can get data from Andrew Paul for bull trout, the assignment
+# will include estimating parameters for all three relationships,
+# their variances, and their covariances.
+
 library(mvtnorm)
 library(ggplot2)
 library(GGally)
@@ -38,6 +42,7 @@ hm <- 0.1  # hooking mortality
 ncm <-0.1
 
 # Uncertain model parameters
+# Replace these with estimates from actual data
 fec_means <- c(-61.288,1.478)
 fec_vcov <- array(c(36,0,0,.02),dim=c(2,2))
 vB_means <- c(80,.32,2.29)
@@ -101,7 +106,8 @@ for (isims in 1:nsims) {
     
     #Apply tautology
     for (j in 15:2) {
-      btrout[j,i+1] <- btrout[j-1,i] - deaths[j-1] 
+      btrout[j,i+1] <- btrout[j-1,i] - deaths[j-1]
+      if (btrout[j,i+1]<0) btrout[j,i+1] = 0
       btrout[1,i+1] <- age0 * (1 - natmort)  #first year losses, no fishing
     } 
     adults[i+1] <- sum(btrout[6:15,i+1])
