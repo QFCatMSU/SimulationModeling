@@ -1,14 +1,9 @@
-#Unit 3: Poisson and Negative Binomial Distribution
-#
-# We will be using the bull trout model from based on Post et al. 2003. NAJFM 23:22-34
+#Bull trout model, based on Post et al. 2003. NAJFM 23:22-34
 # This code is much the same as for Assignment 2.5b, but with modifications to 
 # allow angler catch to be modeled as distributed among anglers using a discrete 
-# distribution: 
-# There are options to use a Poisson or negative binomial distribution
-# We can use this model to examine the effect of a bag limit
-
+# distribution: Poisson or negative binomial, and then examine the effect
+# of a bag limit
 library(ggplot2)
-
 #Steps 1 and 2: Define population variables
 ages <- seq(1:15)
 btrout <- array(0,dim=c(15,100))
@@ -24,19 +19,18 @@ sr <-  c(.002,.00000125) #values from VB model, not Table 1 in Post et al
 
 #Step 3: Define fishery parameters
 vf <- c(.3,1200)     
-q <- 0.07  # catchability from Post et al paper (assume this is ha per angler-hr)
+q <- 0.07  # catchability from Post et al paper (I think this is ha per angler-hr)
 
-# Modifications needed for discrete catch per trip distribution
+# Modications needed for discrete catch per trip distribution
 triplength <- 3.5  # hours per trip
 lake_area <- 525   # ha of lake
 q_corr <- q * triplength / lake_area  # q in units of 1/trips (i.e., adjust for trip length and area)
-trips <- 150 #replace E (effort) with trips
-release_fish <- numeric(trips)
-bag_limit <- 2
 
 hm <- 0.1  # hooking mortality
 ncm <-0.1
-
+trips <- 150 #replace E (effort) with trips
+release_fish <- numeric(trips)
+bag_limit <- 2
   
 #Step 4: Calculate lengths and weights
 bt_len <- vB[1] * (1-exp(-vB[2]*(ages-vB[3])))  #VonB growth
@@ -55,7 +49,6 @@ for (j in 2:15) {
   btrout[j,1] <- btrout[j-1,1]*(1-natmort)
 }
 adults[1] <- sum(btrout[6:15,1])
-
 #Step 6: Start a loop over time
 for (i in 1:99)  {
   #Steps 7a-e and 8 are modified to model catch per trip as a discrete distibution among trips

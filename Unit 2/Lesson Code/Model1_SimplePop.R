@@ -4,9 +4,12 @@
 birds <- 20
 
 # Define variables for processes
+# Note that, at this point, we're simply assuming these are the parameters that describe the 
+#  relationships depicted in Figures 1 and 2. Later, in Unit 4, we'll talk about how to estimate
+#  the parameter values from data
 a <- 1  
 b <- .0046
-c <- 1
+c <- 1.05
 d <- 50
 #Assignment 2.1
 
