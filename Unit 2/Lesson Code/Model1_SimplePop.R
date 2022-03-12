@@ -9,7 +9,7 @@ birds <- 20
 #  the parameter values from data
 a <- 1  
 b <- .0046
-c <- 1.05
+c <- 1
 d <- 50
 #Assignment 2.1
 
