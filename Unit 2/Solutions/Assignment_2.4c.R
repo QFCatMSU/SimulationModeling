@@ -28,9 +28,9 @@ b <- .0046
 c <- 1
 d <- 50
 # Define variables for predation
-sr <- 0.015  # same as Tseheye paper, units are ha/day
-ht <- 4    # units are days/kg
-type <- 2  # functional response type
+sr <- c(.015,.001)  # first value for Type 2, second for Type 3
+ht <- c(4,5)    # first value for Type 2, second for Type 3
+type <- 3  # functional response type
 # functional response calculates consumption in kg per day
 
 #Define population paramters for prey species (logistic model)
@@ -47,7 +47,7 @@ mortality <- numeric(100) # predation mortality
 for (i in 1:100) {   # we will run the model for 100 time steps
   # calculate consumption for each prey
   for (j in 1:3) {
-    eaten[i] <- sr*prey^(type-1)/(1+sr*ht*prey^(type-1)) * birds/area * daysperseason
+    eaten[i] <- sr[type-1]*prey^(type-1)/(1+sr[type-1]*ht[type-1]*prey^(type-1)) * birds/area * daysperseason
     # cap consumption at the total biomass available
     eaten[i] <- min(prey,eaten[i])
     # Calculate and save mortality
