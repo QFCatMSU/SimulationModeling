@@ -9,7 +9,7 @@ birds <- c(15,10,5,3,10)
 #Assignment 2.2a - Solution: Only older birds are reproducing, so:
 #   a) # offspring per female * # females is a smaller number
 #   b) only density of mature birds affects birth rates so compensation is less at the same pop size
-a <- 1  # Assignment 2.2a: you can adjust this parameter to compensate for fewer mature birds...
+a <- 4  # Assignment 2.2a: you can adjust this parameter to compensate for fewer mature birds...
 b <- .0046
 c <- 1
 d <- 50
