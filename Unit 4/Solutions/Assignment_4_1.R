@@ -30,7 +30,7 @@ lake_area <- 525   # ha of lake
 q_corr <- q * triplength / lake_area  # q in units of 1/trips (i.e., adjust for trip length and area)
 trips <- 250 #replace E (effort) with trips
 release_fish <- numeric(trips)
-bag_limit <- 3
+bag_limit <- 2
 
 # ********************Assignment 4.1***********************************************
 
@@ -115,7 +115,12 @@ for (isim in 1:nsims) {
     kept_by_trip <- catch_by_trip - release_fish  # for each trip
     # Adjust catches to reflect trips where bag limit exceeded
     kept_catch <- sum(kept_by_trip)  #sum over trips
-    catch_reduce <- kept_catch/avg_catch  #proportion kept
+    if (avg_catch > 0) {  # trap to protect simulations with avg_catch = 0
+      catch_reduce <- kept_catch/avg_catch  # proportion kept
+    }
+    else {
+      catch_reduce <- 0
+    }
     catch_age_kept <- catch_age * catch_reduce  # numbers kept by age
     # Calculate fish deaths due to hooking mortality
     release_death <- catch_age * (1-catch_reduce) * hm
