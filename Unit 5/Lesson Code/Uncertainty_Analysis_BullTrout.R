@@ -100,7 +100,12 @@ for (isims in 1:nsims) {
     kept_by_trip <- catch_by_trip - release_fish  # for each trip
     #Adjust catches to reflect trips where bag limit exceeded
     kept_catch <- sum(kept_by_trip)  #sum over trips
-    catch_reduce <- kept_catch/avg_catch  #proportion kept
+    if (avg_catch > 0) {  # trap to protect simulations with avg_catch = 0
+      catch_reduce <- kept_catch/avg_catch  # proportion kept
+    }
+    else {
+      catch_reduce <- 0
+    }
     catch_age_kept <- catch_age * catch_reduce  # numbers kept by age
     #Calculate fish deaths due to hooking mortality
     release_death <- catch_age * (1-catch_reduce) * hm

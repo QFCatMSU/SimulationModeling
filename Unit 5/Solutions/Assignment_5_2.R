@@ -1,13 +1,9 @@
 #Unit 5: Assignment 5.2
 #
 # This assignment involves modifying the means, variances and
-#  covariances for the three uncertain relationships used in
+#  covariances for two uncertain relationships used in
 #  "Uncertainty_Analysis_BullTrout.R" and then repeating the
 #  uncertainty analysis used there
-
-# Assuming I can get data from Andrew Paul for bull trout, the assignment
-# will include estimating parameters for all three relationships,
-# their variances, and their covariances.
 
 library(mvtnorm)
 library(ggplot2)
@@ -42,13 +38,14 @@ hm <- 0.1  # hooking mortality
 ncm <-0.1
 
 # Uncertain model parameters
-# Replace these with estimates from actual data
 fec_means <- c(-61.288,1.478)
 fec_vcov <- array(c(36,0,0,.02),dim=c(2,2))
-vB_means <- c(80,.32,2.29)
-vB_vcov <- array(c(64,0,0,0,.001,0,0,0,.04),dim=c(3,3))
-sr_means <-  c(.002,.00000125) #values from VB model, not Table 1 in Post et al
-sr_vcov <- array(c(4e-8,0,0,1.5e-14),dim=c(2,2))
+#These  estimates have been replaced with estimates from actual data
+# see the table in the Unit 5 notes for this assignment
+vB_means <- c(101.3,.057,-1.35)
+vB_vcov <- array(c(276.8,0,0,0,.00023,0,0,0,.229),dim=c(3,3))
+sr_means <-  c(.002,1.25e-6) 
+sr_vcov <- array(c(4e-6,0,0,1.56e-12),dim=c(2,2))
 
 # Create a data frame to save the results
 nsims <- 1000
@@ -96,7 +93,12 @@ for (isims in 1:nsims) {
     kept_by_trip <- catch_by_trip - release_fish  # for each trip
     #Adjust catches to reflect trips where bag limit exceeded
     kept_catch <- sum(kept_by_trip)  #sum over trips
-    catch_reduce <- kept_catch/avg_catch  #proportion kept
+    if (avg_catch > 0) {  # trap to protect simulations with avg_catch = 0
+      catch_reduce <- kept_catch/avg_catch  # proportion kept
+    }
+    else {
+      catch_reduce <- 0
+    }
     catch_age_kept <- catch_age * catch_reduce  # numbers kept by age
     #Calculate fish deaths due to hooking mortality
     release_death <- catch_age * (1-catch_reduce) * hm
@@ -116,7 +118,7 @@ for (isims in 1:nsims) {
     
     #Calculate recruitment using Bev-Holt model
     age0 <- sr[1]*eggs/(1+sr[2]*eggs)
-    
+    if (age0<0) age0 <- 0  # trap to protect against negative sr[1] values
   #End time loop
   }
 # Store results here for post-processing
@@ -155,3 +157,10 @@ std_model1 <- lm.beta(model1)
 cor2cov_1 <- function(R,S){
   diag(S) %*% R %*% diag(S)
 }
+
+
+#The results are much more variable among simulations, mainly due to the higher
+# variance for the s-r relationship. Because of this, the correlations between
+# the parameter values and the model output are much smaller. As well
+# the relative importance of the different parameters is not the same:
+# sr_2 is now the most important parameter, and vb_1 is much less important.
