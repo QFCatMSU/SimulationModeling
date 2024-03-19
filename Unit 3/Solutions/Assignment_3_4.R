@@ -40,7 +40,7 @@ hsd <- .4 * hm # standard deviation of harvest: cv = .4
 
 # Assignment 3.4 - Part 3
 # Calculate variance of the objective proportion
-nsamp <- 30
+nsamp <- 100
 metric <- numeric(nsamp)
 for (ivar in 1:nsamp) {
   
