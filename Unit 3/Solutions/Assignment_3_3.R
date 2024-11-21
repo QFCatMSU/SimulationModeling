@@ -4,8 +4,11 @@
 # Plots of bull trout abundance over time are added
 
 # Change bag limit from 2 to 1
+# Bag = 2, Dist = "P" : adults[100] = 952
+# Bag = 1, Dist = "P" : adults[100] = 1093
 # Compare Poisson assumption to Negative binomial assumption
-
+# Bag = 2, Dist = "NB": adults[100] = 1111
+# Bag = 1, Dist = "NB": adults[100] = 1237
 
 library(ggplot2)
 
@@ -33,7 +36,7 @@ q_corr <- q * triplength / lake_area  # q in units of 1/trips (i.e., adjust for 
 trips <- 150 #replace E (effort) with trips
 release_fish <- numeric(trips)
 bag_limit <- 1
-dist_catch <- 'P'  # P means Poisson, NB means Negative Binomial
+dist_catch <- 'NB'  # P means Poisson, NB means Negative Binomial
 
 hm <- 0.1  # hooking mortality
 ncm <-0.1

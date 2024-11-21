@@ -14,6 +14,8 @@
 # Calculate the variance in this value among replicate simulations
 # Estimate a target number of simulations to get an estimate of the 20th percentile that is +/- 10%
 
+# Results comments at end of code
+
 library(ggplot2)
 
 # Simulation controls
@@ -121,9 +123,6 @@ Dist_plot <- ggplot() +
   theme_bw()
 plot(Dist_plot)
 
-# For 100 simulation replicates
-# A cull amount of 1.8 (1,800 birds) gives a "prop_low" value that is less than .1
-# at least, most of the time
 
 # calculate the mean across simulations
 avg_birds <- as.numeric(by(outputs$birds, outputs$years, FUN=mean))
@@ -165,4 +164,8 @@ Birth_var <- ggplot() +
   theme_bw()
 Birth_var
 
+# For 100 simulation replicates
+# A cull amount of 1.8 (1,800 birds) gives a "prop_low" value that is less than .1
+# at least, most of the time
 
+# Sample size requirement ranges from ~ 24-33 based on 20 trials 
