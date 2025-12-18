@@ -73,7 +73,7 @@ sub_pop_over_time[j,i] <- sum(birds_over_time[j,,i])
 # Birds that leave are split equally between sub_pops 2 and 3
 if (sub_pop_over_time[1,i]>30) {
   move[1,1] <- 1 - 1/70 * (sub_pop_over_time[1,i]-30)
-  move[1,2] <- 1 - move[1,1]/2
+  move[1,2] <- (1 - move[1,1])/2
   move[1,3] <- move[1,2]
 }
 else {
