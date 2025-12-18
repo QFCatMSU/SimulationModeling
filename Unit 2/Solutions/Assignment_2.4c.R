@@ -45,14 +45,12 @@ mortality <- numeric(100) # predation mortality
 
 # Start the main simulation loop over time
 for (i in 1:100) {   # we will run the model for 100 time steps
-  # calculate consumption for each prey
-  for (j in 1:3) {
-    eaten[i] <- sr[type-1]*prey^(type-1)/(1+sr[type-1]*ht[type-1]*prey^(type-1)) * birds/area * daysperseason
-    # cap consumption at the total biomass available
-    eaten[i] <- min(prey,eaten[i])
-    # Calculate and save mortality
-    mortality[i] <- eaten[i]/prey
-      } 
+  # calculate prey consumption 
+  eaten[i] <- sr[type-1]*prey^(type-1)/(1+sr[type-1]*ht[type-1]*prey^(type-1)) * birds/area * daysperseason
+  # cap consumption at the total biomass available
+  eaten[i] <- min(prey,eaten[i])
+  # Calculate and save mortality
+  mortality[i] <- eaten[i]/prey
   # Calculate the birth and death rates according to our dynamic processes
   births_per_female <- a * exp(-b * birds)
   deaths_per_capita <- c * birds / (d + birds)
