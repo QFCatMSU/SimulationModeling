@@ -29,7 +29,9 @@ popmodel <- function(a,b,c,d) {
     #close the time loop
     
     #Find the earliest year when numbers are at least 95% of the max
-    year_95 <- min(which(birds >= 0.95*birds[100]))
+    if ( i == 99) {
+      year_95 <- min(which(birds >= 0.95*birds[100]))
+    }
   }  
   return(year_95)
 }

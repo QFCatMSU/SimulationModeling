@@ -63,7 +63,7 @@ gr_model <- nls(Length~a*(1-exp(-b*(Age-c))),
 # ********************Assignment 4.1***********************************************
 
 # Set up a replicate simulation loop, and bins for model outputs
-nsims <- 500  # 100 simulations
+nsims <- 500  # 500 simulations
 nyears <- 100  # 100 years per simulation
 final_abundance <- numeric(500) #save the final year abundance of adults
 for (isim in 1:nsims) {
